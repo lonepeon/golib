@@ -1,5 +1,12 @@
 GO_BIN := go
 
+.PHONY: fetch-deps
+fetch-deps: dev-fetch-deps test-fetch-deps
+
+.PHONY: dev-fetch-deps
+dev-fetch-deps: test-fetch-deps
+	@$(GO_BIN) install github.com/golang/mock/mockgen@v1.6.0
+
 .PHONY: test-fetch-deps
 test-fetch-deps:
 	@$(GO_BIN) install honnef.co/go/tools/cmd/staticcheck@2021.1.2
