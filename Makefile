@@ -25,6 +25,11 @@ test-lint:
 	@echo $@
 	@golangci-lint run
 
+.PHONY: test-generate
+test-generate:
+	@echo $@
+	@./_scripts/assert-generated-files-updated.sh
+
 .PHONY: test-format
 test-format:
 	@echo $@

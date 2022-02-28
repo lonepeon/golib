@@ -6,6 +6,22 @@ on:
       - main
 
 jobs:
+  file-generation-tests:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "checkout code"
+        uses: actions/checkout@v2
+      - name: "setup go version"
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.17.7"
+      - name: "assert go version"
+        run: make test-go-version
+      - name: "fetch 3rd party dependencies"
+        run: make dev-fetch-deps
+      - name: "assert all files are generated"
+        run: make test-generate
+
   format-tests:
     runs-on: "ubuntu-latest"
     steps:
