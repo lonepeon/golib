@@ -1,12 +1,7 @@
 #! /usr/bin/env bash
 
-success() {
-  echo "$(tput setaf 2)[OK] $(tput setaf 0) $*"
-}
-
-fail() {
-  echo "$(tput setaf 1)[ERR]$(tput setaf 0) $*"
-}
+currentFolderPath=$(cd "$(dirname $0)" && pwd);
+source "${currentFolderPath}/commons.sh"
 
 expectedGoVersion=$(awk '/golang/ { print $2 }' .tool-versions);
 echo "expected version: ${expectedGoVersion}";
