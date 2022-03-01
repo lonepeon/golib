@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//go:generate go run ../sqlutil/cmd ./scripts
+//go:generate go run ../sqlutil/cmd/sql-migration ./scripts
 
 const (
 	DefaultMaxAttempts = 10
