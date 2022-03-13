@@ -29,6 +29,10 @@ func RequireEqualBool(t *testing.T, want bool, got bool, format string, args ...
 	checksEqualBool(t.Fatalf, t, want, got, format, args...)
 }
 
+func RequireEqualBytes(t *testing.T, want []byte, got []byte, format string, args ...interface{}) {
+	checksEqualBytes(t.Fatalf, t, want, got, format, args...)
+}
+
 func RequireEqualStrings(t *testing.T, want []string, got []string, format string, args ...interface{}) {
 	checksEqualStrings(t.Fatalf, t, want, got, format, args...)
 }

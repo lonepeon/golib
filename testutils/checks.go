@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"strings"
@@ -62,6 +63,14 @@ func checksEqualBool(log Formatter, t *testing.T, want bool, got bool, format st
 	t.Helper()
 
 	if want != got {
+		log("%s\nwant: %t\ngot:  %t\n", fmt.Sprintf(format, args...), want, got)
+	}
+}
+
+func checksEqualBytes(log Formatter, t *testing.T, want []byte, got []byte, format string, args ...interface{}) {
+	t.Helper()
+
+	if !bytes.Equal(want, got) {
 		log("%s\nwant: %t\ngot:  %t\n", fmt.Sprintf(format, args...), want, got)
 	}
 }
