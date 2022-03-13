@@ -29,6 +29,10 @@ func AssertEqualBool(t *testing.T, want bool, got bool, format string, args ...i
 	checksEqualBool(t.Errorf, t, want, got, format, args...)
 }
 
+func AssertEqualBytes(t *testing.T, want []byte, got []byte, format string, args ...interface{}) {
+	checksEqualBytes(t.Errorf, t, want, got, format, args...)
+}
+
 func AssertEqualStrings(t *testing.T, want []string, got []string, format string, args ...interface{}) {
 	checksEqualStrings(t.Errorf, t, want, got, format, args...)
 }
