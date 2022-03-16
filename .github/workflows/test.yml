@@ -6,7 +6,24 @@ on:
       - main
 
 jobs:
+  ci-tools:
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "setup CI tools cache"
+        id: cache-ci-tools
+        uses: actions/cache@v2
+        with:
+          path: ci-tools
+          key: ${{ runner.os }}-ci-tools-v20220315143056
+      - name: "download assert-version binary"
+        if: steps.cache-ci-tools.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ci-tools
+          curl -Lo ci-tools/assert-version https://github.com/lonepeon/cicd/releases/download/v20220315143056/assert-version-linux-386
+          chmod u+x ci-tools/assert-version
+
   file-generation-tests:
+    needs: ci-tools
     runs-on: "ubuntu-latest"
     steps:
       - name: "checkout code"
@@ -15,14 +32,21 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: "1.17.7"
+      - name: "setup CI tools cache"
+        id: cache-ci-tools
+        uses: actions/cache@v2
+        with:
+          path: ci-tools
+          key: ${{ runner.os }}-ci-tools-v20220315143056
       - name: "assert go version"
-        run: make test-go-version
+        run: ci-tools/assert-version go
       - name: "fetch 3rd party dependencies"
         run: make dev-fetch-deps
       - name: "assert all files are generated"
         run: make test-generate
 
   format-tests:
+    needs: ci-tools
     runs-on: "ubuntu-latest"
     steps:
       - name: "checkout code"
@@ -31,8 +55,14 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: "1.17.7"
+      - name: "setup CI tools cache"
+        id: cache-ci-tools
+        uses: actions/cache@v2
+        with:
+          path: ci-tools
+          key: ${{ runner.os }}-ci-tools-v20220315143056
       - name: "assert go version"
-        run: make test-go-version
+        run: ci-tools/assert-version go
       - name: "fetch 3rd party dependencies"
         run: make test-fetch-deps
       - name: "run code format"
@@ -43,6 +73,7 @@ jobs:
         run: make test-security
 
   unit-tests:
+    needs: ci-tools
     runs-on: "ubuntu-latest"
     steps:
       - name: "checkout code"
@@ -51,7 +82,13 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: "1.17.7"
+      - name: "setup CI tools cache"
+        id: cache-ci-tools
+        uses: actions/cache@v2
+        with:
+          path: ci-tools
+          key: ${{ runner.os }}-ci-tools-v20220315143056
       - name: "assert go version"
-        run: make test-go-version
+        run: ci-tools/assert-version go
       - name: "run unit tests"
         run: make test-unit
