@@ -1,11 +1,19 @@
 package web
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/sessions"
 )
+
+var ErrUserNotFound = errors.New("current user not found")
+
+type User struct {
+	Username string
+	Password string
+}
 
 type CurrentAuthenticatedUserFilesystemSessionStore struct {
 	store sessions.Store
