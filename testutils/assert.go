@@ -72,3 +72,9 @@ func AssertEqualDuration(t *testing.T, want time.Duration, got time.Duration, fo
 func AssertEqualTime(t *testing.T, want time.Time, got time.Time, format string, args ...interface{}) {
 	checksEqualTime(t.Errorf, t, want, got, format, args...)
 }
+
+func AssertNotEmptyString(t *testing.T, got string, format string, args ...interface{}) {
+	t.Helper()
+
+	checksNotEmptyString(t.Errorf, t, got, format, args...)
+}

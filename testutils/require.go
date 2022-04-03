@@ -72,3 +72,9 @@ func RequireEqualDuration(t *testing.T, want time.Duration, got time.Duration, f
 func RequireEqualTime(t *testing.T, want time.Time, got time.Time, format string, args ...interface{}) {
 	checksEqualTime(t.Fatalf, t, want, got, format, args...)
 }
+
+func RequireNotEmptyString(t *testing.T, got string, format string, args ...interface{}) {
+	t.Helper()
+
+	checksNotEmptyString(t.Fatalf, t, got, format, args...)
+}

@@ -159,3 +159,11 @@ func checksEqualTime(log Formatter, t *testing.T, want time.Time, got time.Time,
 		log("%s\nwant: %s\ngot:  %s\n", fmt.Sprintf(format, args...), want.String(), got.String())
 	}
 }
+
+func checksNotEmptyString(log Formatter, t *testing.T, got string, format string, args ...interface{}) {
+	t.Helper()
+
+	if got == "" {
+		log("%s\ngot: %s\n", fmt.Sprintf(format, args...), got)
+	}
+}
