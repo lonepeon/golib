@@ -18,7 +18,7 @@ test-go-version:
 	@./_scripts/assert-go-version.sh
 
 .PHONY: test
-test: test-unit test-format test-lint test-security
+test: test-unit test-integration test-format test-lint test-security
 
 .PHONY: test-lint
 test-lint:
@@ -48,4 +48,9 @@ test-security:
 .PHONY: test-unit
 test-unit:
 	@echo $@
-	@$(GO_BIN) test ./...
+	@$(GO_BIN) test -short ./...
+
+.PHONY: test-integration
+test-integration:
+	@echo $@
+	@$(GO_BIN) test ./... -run ^TestIntegration

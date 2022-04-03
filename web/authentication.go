@@ -8,13 +8,13 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+var ErrUserInvalidCredentials = errors.New("invalid user credentials")
 var ErrUserNotFound = errors.New("current user not found")
 var ErrUserAlreadyExist = errors.New("user already registered")
 
 type User struct {
 	ID       string
 	Username string
-	Password string
 }
 
 type CurrentAuthenticatedUserFilesystemSessionStore struct {

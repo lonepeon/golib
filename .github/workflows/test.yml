@@ -90,3 +90,24 @@ jobs:
         run: ci-tools/assert-version go
       - name: "run unit tests"
         run: make test-unit
+
+  integration-tests:
+    needs: ci-tools
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: "checkout code"
+        uses: actions/checkout@v2
+      - name: "setup go version"
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.17.7"
+      - name: "setup CI tools cache"
+        id: cache-ci-tools
+        uses: actions/cache@v2
+        with:
+          path: ci-tools
+          key: ${{ runner.os }}-ci-tools-v20220315143056
+      - name: "assert go version"
+        run: ci-tools/assert-version go
+      - name: "run integration tests"
+        run: make test-integration

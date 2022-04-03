@@ -6,29 +6,34 @@ import (
 	"github.com/lonepeon/golib/web"
 )
 
+type InMemoryUser struct {
+	user     web.User
+	password string
+}
+
 type InMemory struct {
 	lastid int
-	users  []web.User
+	users  []InMemoryUser
 }
 
 func NewInMemory() *InMemory {
 	return &InMemory{}
 }
 
-func (i *InMemory) Authenticate(username string, password string) (string, bool) {
+func (i *InMemory) Authenticate(username string, password string) (string, error) {
 	for _, user := range i.users {
-		if user.Username == username && user.Password == password {
-			return user.ID, true
+		if user.user.Username == username && user.password == password {
+			return user.user.ID, nil
 		}
 	}
 
-	return "", false
+	return "", web.ErrUserInvalidCredentials
 }
 
 func (i *InMemory) Lookup(id string) (web.User, error) {
 	for _, user := range i.users {
-		if user.ID == id {
-			return user, nil
+		if user.user.ID == id {
+			return user.user, nil
 		}
 	}
 
@@ -37,16 +42,22 @@ func (i *InMemory) Lookup(id string) (web.User, error) {
 
 func (i *InMemory) Register(username string, password string) (string, error) {
 	for _, user := range i.users {
-		if user.Username == username {
+		if user.user.Username == username {
 			return "", web.ErrUserAlreadyExist
 		}
 	}
 
 	i.lastid += 1
 
-	user := web.User{ID: strconv.Itoa(i.lastid), Username: username, Password: password}
+	user := InMemoryUser{
+		user: web.User{
+			ID:       strconv.Itoa(i.lastid),
+			Username: username,
+		},
+		password: password,
+	}
 
 	i.users = append(i.users, user)
 
-	return user.ID, nil
+	return user.user.ID, nil
 }

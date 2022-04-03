@@ -8,37 +8,28 @@ import (
 	"github.com/lonepeon/golib/web/authenticationstore"
 )
 
-func TestInMemoryAuthenticate(t *testing.T) {
-	type Testcase struct {
-		Username       string
-		Password       string
-		ExpectedID     string
-		ExpectedStatus bool
-	}
-
+func TestInMemoryAuthenticateSuccess(t *testing.T) {
 	inmemory := authenticationstore.NewInMemory()
 	_, err := inmemory.Register("jdoe", "jdoe1234")
 	testutils.RequireNoError(t, err, "unexpected error")
 	_, err = inmemory.Register("jane", "jane1234")
 	testutils.RequireNoError(t, err, "unexpected error")
 
-	runner := func(name string, tc Testcase) {
-		t.Run(name, func(t *testing.T) {
-			id, status := inmemory.Authenticate(tc.Username, tc.Password)
-			testutils.AssertEqualString(t, tc.ExpectedID, id, "unexpected user ID")
-			testutils.AssertEqualBool(t, tc.ExpectedStatus, status, "unexpected authentication status")
-		})
-	}
+	id, err := inmemory.Authenticate("jdoe", "jdoe1234")
+	testutils.RequireNoError(t, err, "unexpected error")
+	testutils.AssertEqualString(t, "1", id, "unexpected user ID")
+}
 
-	runner("when credentials are valid", Testcase{
-		Username: "jdoe", Password: "jdoe1234",
-		ExpectedID: "1", ExpectedStatus: true,
-	})
+func TestInMemoryAuthenticateError(t *testing.T) {
+	inmemory := authenticationstore.NewInMemory()
+	_, err := inmemory.Register("jdoe", "jdoe1234")
+	testutils.RequireNoError(t, err, "unexpected error")
+	_, err = inmemory.Register("jane", "jane1234")
+	testutils.RequireNoError(t, err, "unexpected error")
 
-	runner("when username doesn't match password", Testcase{
-		Username: "jdoe", Password: "jane1234",
-		ExpectedID: "", ExpectedStatus: false,
-	})
+	id, err := inmemory.Authenticate("jdoe", "jane1234")
+	testutils.RequireHasError(t, err, "expecting an error but got an ID: %v", id)
+	testutils.AssertErrorIs(t, web.ErrUserInvalidCredentials, err, "unexpected error")
 }
 
 func TestInMemoryLookupSuccess(t *testing.T) {
@@ -52,7 +43,6 @@ func TestInMemoryLookupSuccess(t *testing.T) {
 	testutils.RequireNoError(t, err, "unexpected error")
 	testutils.AssertEqualString(t, "1", user.ID, "unexpected user ID")
 	testutils.AssertEqualString(t, "jdoe", user.Username, "unexpected user name")
-	testutils.AssertEqualString(t, "jdoe1234", user.Password, "unexpected password")
 }
 
 func TestInMemoryLookupError(t *testing.T) {
