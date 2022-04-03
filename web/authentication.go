@@ -9,8 +9,10 @@ import (
 )
 
 var ErrUserNotFound = errors.New("current user not found")
+var ErrUserAlreadyExist = errors.New("user already registered")
 
 type User struct {
+	ID       string
 	Username string
 	Password string
 }
