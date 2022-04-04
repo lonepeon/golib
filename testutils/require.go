@@ -6,22 +6,32 @@ import (
 )
 
 func RequireHasError(t *testing.T, got error, format string, args ...interface{}) {
+	t.Helper()
+
 	checksHasError(t.Fatalf, t, got, format, args...)
 }
 
 func RequireErrorContains(t *testing.T, substring string, got error, format string, args ...interface{}) {
+	t.Helper()
+
 	checksErrorContains(t.Fatalf, t, substring, got, format, args...)
 }
 
 func RequireErrorAs(t *testing.T, want interface{}, got error, format string, args ...interface{}) {
+	t.Helper()
+
 	checksErrorAs(t.Fatalf, t, want, got, format, args...)
 }
 
 func RequireErrorIs(t *testing.T, want error, got error, format string, args ...interface{}) {
+	t.Helper()
+
 	checksErrorIs(t.Fatalf, t, want, got, format, args...)
 }
 
 func RequireNoError(t *testing.T, err error, format string, args ...interface{}) {
+	t.Helper()
+
 	checksNoError(t.Fatalf, t, err, format, args...)
 }
 
