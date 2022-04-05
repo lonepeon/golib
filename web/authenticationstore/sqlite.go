@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/google/uuid"
+	"github.com/lonepeon/golib/sqlutil/sqliteutil"
 	"github.com/lonepeon/golib/web"
 )
 
@@ -25,7 +26,7 @@ func NewSQLite(db *sql.DB, pepper string) *SQLite {
 	return &SQLite{db: db, pepper: pepper, HashCost: bcrypt.DefaultCost}
 }
 
-func (s *SQLite) Authenticate(username string, password string) (string, error) {
+func (s *SQLite) Authenticate(username string, password string) (web.AuthenticationUserID, error) {
 	rows, err := s.db.Query("SELECT id, password, salt FROM authentication_user WHERE username = ?", username)
 	if err != nil {
 		return "", fmt.Errorf("can't execute lookup query: %v", err)
@@ -45,35 +46,35 @@ func (s *SQLite) Authenticate(username string, password string) (string, error) 
 		return "", fmt.Errorf("%w: invalid password: %v", web.ErrUserInvalidCredentials, err)
 	}
 
-	return id, nil
+	return web.AuthenticationUserID(id), nil
 }
 
-func (s *SQLite) Lookup(id string) (web.User, error) {
-	rows, err := s.db.Query("SELECT id, username FROM authentication_user WHERE id = ?", id)
+func (s *SQLite) Lookup(id web.AuthenticationUserID) (web.AuthenticationUser, error) {
+	rows, err := s.db.Query("SELECT id, username FROM authentication_user WHERE id = ?", id.String())
 	if err != nil {
-		return web.User{}, fmt.Errorf("can't lookup user in database: %v", err)
+		return web.AuthenticationUser{}, fmt.Errorf("can't lookup user in database: %v", err)
 	}
 
 	if !rows.Next() {
-		return web.User{}, web.ErrUserNotFound
+		return web.AuthenticationUser{}, web.ErrUserNotFound
 	}
 
-	var user web.User
+	var user web.AuthenticationUser
 	if err := rows.Scan(&user.ID, &user.Username); err != nil {
-		return web.User{}, fmt.Errorf("can't scan SQL columns: %v", err)
+		return web.AuthenticationUser{}, fmt.Errorf("can't scan SQL columns: %v", err)
 	}
 
 	return user, nil
 }
 
-func (s *SQLite) Register(username string, password string) (string, error) {
+func (s *SQLite) Register(username string, password string) (web.AuthenticationUserID, error) {
 	id := s.generateID()
 	hashedPassword, salt, err := s.hashPassword(password)
 	if err != nil {
 		return "", fmt.Errorf("can't hash password: %v", err)
 	}
 
-	user := web.User{ID: id, Username: username}
+	user := web.AuthenticationUser{ID: id, Username: username}
 
 	_, err = s.db.Exec(
 		"INSERT INTO authentication_user (ID, username, password, salt) VALUES (?, ?, ?, ?)",
@@ -81,6 +82,9 @@ func (s *SQLite) Register(username string, password string) (string, error) {
 	)
 
 	if err != nil {
+		if sqliteutil.IsUniqueConstraintError(err, "authentication_user.username") {
+			return "", web.ErrUserAlreadyExist
+		}
 		return "", fmt.Errorf("can't insert user (username=%s): %v", username, err)
 	}
 
@@ -111,6 +115,6 @@ func (s *SQLite) generateSalt() (string, error) {
 	return base64.URLEncoding.EncodeToString(buffer), err
 }
 
-func (s *SQLite) generateID() string {
-	return uuid.NewString()
+func (s *SQLite) generateID() web.AuthenticationUserID {
+	return web.AuthenticationUserID(uuid.NewString())
 }

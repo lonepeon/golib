@@ -27,6 +27,8 @@ func TestIntegration(t *testing.T) {
 	t.Run("SQLiteAuthenticateErrorWrongUsername", testSQLiteAuthenticateErrorWrongUsername)
 	t.Run("SQLiteLookupSuccess", testSQLiteLookupSuccess)
 	t.Run("SQLiteLookupError", testSQLiteLookupError)
+	t.Run("SQLiteRegisterSuccess", testSQLiteRegisterSuccess)
+	t.Run("SQLiteRegisterAlreadyTaken", testSQLiteRegisterAlreadyTaken)
 }
 
 func testSQLiteLookupSuccess(t *testing.T) {
@@ -36,7 +38,7 @@ func testSQLiteLookupSuccess(t *testing.T) {
 
 	user, err := store.Lookup(id)
 	testutils.RequireNoError(t, err, "didn't find user")
-	testutils.AssertEqualString(t, id, user.ID, "unexpected ID")
+	testutils.AssertEqualString(t, id.String(), user.ID.String(), "unexpected ID")
 	testutils.AssertEqualString(t, "jane", user.Username, "unexpected username")
 }
 
@@ -57,7 +59,7 @@ func testSQLiteAuthenticateSuccess(t *testing.T) {
 
 	id, err := store.Authenticate("jane", "jane1234")
 	testutils.RequireNoError(t, err, "unexpected authentication error")
-	testutils.AssertNotEmptyString(t, id, "expecting an id")
+	testutils.AssertNotEmptyString(t, id.String(), "expecting an id")
 }
 
 func testSQLiteAuthenticateErrorWrongPassword(t *testing.T) {
@@ -80,6 +82,26 @@ func testSQLiteAuthenticateErrorWrongUsername(t *testing.T) {
 	testutils.RequireHasError(t, err, "expecting authentication error but got an ID: %v", id)
 	testutils.AssertErrorIs(t, web.ErrUserInvalidCredentials, err, "unexpected error")
 	testutils.AssertContainsString(t, "invalid username", err.Error(), "unexpected error message")
+}
+
+func testSQLiteRegisterSuccess(t *testing.T) {
+	store := setupDatabase(t)
+
+	id, err := store.Register("jane", "jane1234")
+
+	testutils.RequireNoError(t, err, "can't register user")
+	testutils.AssertNotEmptyString(t, id.String(), "expecting a non empty ID")
+}
+
+func testSQLiteRegisterAlreadyTaken(t *testing.T) {
+	store := setupDatabase(t)
+
+	_, err := store.Register("jane", "jane1234")
+	testutils.RequireNoError(t, err, "can't register user")
+
+	id, err := store.Register("jane", "jane1234")
+	testutils.RequireHasError(t, err, "expecting an error but registering worked with id: %s", id)
+	testutils.AssertErrorIs(t, err, web.ErrUserAlreadyExist, "unexpected error")
 }
 
 func setupDatabase(t *testing.T) *authenticationstore.SQLite {

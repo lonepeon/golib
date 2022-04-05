@@ -23,8 +23,8 @@ const (
 type Session struct {
 	ID        string
 	Data      string
-	CreatedAt time.Time
-	ExpiredAt time.Time
+	CreatedAt string
+	ExpiredAt string
 }
 
 type SQLite struct {
@@ -102,16 +102,13 @@ func (s *SQLite) saveSession(ctx context.Context, sess *sessions.Session) error 
 func (s *SQLite) insertSession(ctx context.Context, sess *sessions.Session) error {
 	createdAt, ok := sess.Values[createdAtField]
 	if !ok {
-		createdAt = time.Now()
+		createdAt = time.Now().Format(time.RFC3339)
 	}
 
 	expiredAt, ok := sess.Values[expiredAtField]
 	if !ok {
-		expiredAt = time.Now().Add(time.Second * time.Duration(sess.Options.MaxAge))
+		expiredAt = time.Now().Add(time.Second * time.Duration(sess.Options.MaxAge)).Format(time.RFC3339)
 	}
-
-	delete(sess.Values, createdAtField)
-	delete(sess.Values, expiredAtField)
 
 	data, err := securecookie.EncodeMulti(sess.Name(), sess.Values, s.Codecs...)
 	if err != nil {
@@ -135,9 +132,6 @@ func (s *SQLite) insertSession(ctx context.Context, sess *sessions.Session) erro
 }
 
 func (s *SQLite) updateSession(ctx context.Context, sess *sessions.Session) error {
-	delete(sess.Values, createdAtField)
-	delete(sess.Values, expiredAtField)
-
 	data, err := securecookie.EncodeMulti(sess.Name(), sess.Values, s.Codecs...)
 	if err != nil {
 		return fmt.Errorf("can't encode new session values: %w", err)
@@ -166,19 +160,29 @@ func (s *SQLite) fillSession(ctx context.Context, sess *sessions.Session) error 
 		return fmt.Errorf("can't query session table (id=%s): %v", sess.ID, err)
 	}
 
+	if !row.Next() {
+		return fmt.Errorf("can't find session with id (id=%s)", sess.ID)
+	}
+
 	var dto Session
 	if err := row.Scan(&dto.ID, &dto.Data, &dto.CreatedAt, &dto.ExpiredAt); err != nil {
 		return fmt.Errorf("can't scan session row (id=%s): %v", sess.ID, err)
 	}
 
-	if dto.ExpiredAt.Before(time.Now()) {
-		return fmt.Errorf("can't get expired session (id=%s, expiredAt=%s)", sess.ID, dto.ExpiredAt.Format(time.RFC3339))
+	expiredAt, err := time.Parse(time.RFC3339, dto.ExpiredAt)
+	if err != nil {
+		return fmt.Errorf("can't parse expired to a time (value=%s): %v", dto.ExpiredAt, err)
+	}
+
+	if expiredAt.Before(time.Now()) {
+		return fmt.Errorf("can't get expired session (id=%s, expiredAt=%s)", sess.ID, dto.ExpiredAt)
 	}
 
 	if err := securecookie.DecodeMulti(sess.Name(), dto.Data, &sess.Values, s.Codecs...); err != nil {
 		return fmt.Errorf("can't decode session data (id=%s): %w", sess.ID, err)
 	}
 
+	sess.Options.MaxAge = int(time.Since(expiredAt).Seconds())
 	sess.Values[createdAtField] = dto.CreatedAt
 	sess.Values[expiredAtField] = dto.ExpiredAt
 

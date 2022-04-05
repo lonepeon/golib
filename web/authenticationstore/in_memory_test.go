@@ -17,7 +17,7 @@ func TestInMemoryAuthenticateSuccess(t *testing.T) {
 
 	id, err := inmemory.Authenticate("jdoe", "jdoe1234")
 	testutils.RequireNoError(t, err, "unexpected error")
-	testutils.AssertEqualString(t, "1", id, "unexpected user ID")
+	testutils.AssertEqualString(t, "1", id.String(), "unexpected user ID")
 }
 
 func TestInMemoryAuthenticateError(t *testing.T) {
@@ -41,7 +41,7 @@ func TestInMemoryLookupSuccess(t *testing.T) {
 
 	user, err := inmemory.Lookup(id)
 	testutils.RequireNoError(t, err, "unexpected error")
-	testutils.AssertEqualString(t, "1", user.ID, "unexpected user ID")
+	testutils.AssertEqualString(t, "1", user.ID.String(), "unexpected user ID")
 	testutils.AssertEqualString(t, "jdoe", user.Username, "unexpected user name")
 }
 
@@ -61,11 +61,11 @@ func TestInMemoryRegisterSuccess(t *testing.T) {
 
 	id, err := inmemory.Register("jdoe", "jdoe1234")
 	testutils.RequireNoError(t, err, "unexpected error")
-	testutils.AssertEqualString(t, "1", id, "unexpected identifier")
+	testutils.AssertEqualString(t, "1", id.String(), "unexpected identifier")
 
 	id, err = inmemory.Register("jane", "jane1234")
 	testutils.RequireNoError(t, err, "unexpected error")
-	testutils.AssertEqualString(t, "2", id, "unexpected identifier")
+	testutils.AssertEqualString(t, "2", id.String(), "unexpected identifier")
 }
 
 func TestInMemoryRegisterError(t *testing.T) {
@@ -73,7 +73,7 @@ func TestInMemoryRegisterError(t *testing.T) {
 
 	id, err := inmemory.Register("jdoe", "jdoe1234")
 	testutils.RequireNoError(t, err, "unexpected error")
-	testutils.AssertEqualString(t, "1", id, "unexpected identifier")
+	testutils.AssertEqualString(t, "1", id.String(), "unexpected identifier")
 
 	_, err = inmemory.Register("jdoe", "jane1234")
 	testutils.RequireHasError(t, err, "expecting an error")
