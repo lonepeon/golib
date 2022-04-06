@@ -61,3 +61,5 @@ func (i *InMemory) Register(username string, password string) (web.Authenticatio
 
 	return user.user.ID, nil
 }
+
+var _ web.AuthenticationBackendStorer = &InMemory{}

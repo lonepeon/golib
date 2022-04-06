@@ -137,7 +137,7 @@ func (s *SQLite) updateSession(ctx context.Context, sess *sessions.Session) erro
 		return fmt.Errorf("can't encode new session values: %w", err)
 	}
 
-	result, err := s.db.ExecContext(ctx, ` UPDATE sessions SET data = ? WHERE id = ?`, data, sess.ID)
+	result, err := s.db.ExecContext(ctx, `UPDATE sessions SET data = ? WHERE id = ?`, data, sess.ID)
 	if err != nil {
 		return fmt.Errorf("can't persist existing session in database (id=%s): %v", sess.ID, err)
 	}
@@ -159,6 +159,8 @@ func (s *SQLite) fillSession(ctx context.Context, sess *sessions.Session) error 
 	if err != nil {
 		return fmt.Errorf("can't query session table (id=%s): %v", sess.ID, err)
 	}
+
+	defer row.Close()
 
 	if !row.Next() {
 		return fmt.Errorf("can't find session with id (id=%s)", sess.ID)

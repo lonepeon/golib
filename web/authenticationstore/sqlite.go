@@ -31,6 +31,7 @@ func (s *SQLite) Authenticate(username string, password string) (web.Authenticat
 	if err != nil {
 		return "", fmt.Errorf("can't execute lookup query: %v", err)
 	}
+	defer rows.Close()
 
 	if !rows.Next() {
 		return "", fmt.Errorf("%w: invalid username", web.ErrUserInvalidCredentials)
@@ -54,6 +55,7 @@ func (s *SQLite) Lookup(id web.AuthenticationUserID) (web.AuthenticationUser, er
 	if err != nil {
 		return web.AuthenticationUser{}, fmt.Errorf("can't lookup user in database: %v", err)
 	}
+	defer rows.Close()
 
 	if !rows.Next() {
 		return web.AuthenticationUser{}, web.ErrUserNotFound
@@ -118,3 +120,5 @@ func (s *SQLite) generateSalt() (string, error) {
 func (s *SQLite) generateID() web.AuthenticationUserID {
 	return web.AuthenticationUserID(uuid.NewString())
 }
+
+var _ web.AuthenticationBackendStorer = &SQLite{}
